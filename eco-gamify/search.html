@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Eco Gamify — Eco Search</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <h1>🔍 Eco Search — Reuse / Recycle / Reduce</h1>
+</header>
+
+<main class="container" style="grid-template-columns:1fr;">
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="small muted">Type any item and learn how to handle it sustainably</div>
+      <a class="back-home" href="index.html">Back to Home</a>
+    </div>
+
+    <div style="display:flex;gap:1rem;align-items:center;margin-top:1rem;">
+      <input id="searchInput" placeholder="e.g., plastic bottle, old clothes, banana peel" />
+      <button class="action-btn" id="searchBtn">Search</button>
+    </div>
+
+    <div style="margin-top:1rem" id="resultCard" class="panel" hidden>
+      <h3 id="resultTitle"></h3>
+      <div id="resultCategory" class="small muted"></div>
+      <p id="resultTip"></p>
+      <div style="margin-top:.6rem">
+        <button class="action-btn" id="learnBtn">I learned this (+5 pts)</button>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<div class="footer">Search classifier — client-side dataset demo</div>
+
+<script src="js/app.js"></script>
+<script src="js/search.js"></script>
+</body>
+</html>

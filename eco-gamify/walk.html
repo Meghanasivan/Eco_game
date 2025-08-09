@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Eco Gamify — Walk Tracker</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+<header>
+  <h1>🚶 Walk Tracker</h1>
+  <p>Log steps, earn points, join the weekly challenge</p>
+</header>
+
+<main class="container" style="grid-template-columns:1fr;">
+  <section class="panel">
+    <div class="nav">
+      <a href="index.html">Home</a>
+      <a href="walk.html">Walk Tracker</a>
+      <a href="search.html">Eco Search</a>
+    </div>
+
+    <div style="display:flex;gap:1rem;align-items:center;">
+      <div style="flex:1">
+        <label class="small">Steps to add</label>
+        <input id="stepsInput" type="number" placeholder="Enter number of steps (e.g., 500)" />
+        <div style="display:flex;gap:.5rem;margin-top:.5rem">
+          <button class="action-btn" id="addStepsBtn">Add Steps</button>
+          <button class="action-btn secondary" id="clearStepsBtn">Clear Steps</button>
+        </div>
+        <div class="note" style="margin-top:.6rem">Optional: on mobile, enable pedometer integration below.</div>
+      </div>
+
+      <div style="width:280px">
+        <div class="score-box">
+          <div class="small">Total Steps</div>
+          <div class="score-num" id="totalSteps">0</div>
+          <div class="muted" id="walkPoints">Points from steps: 0</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <h3>Weekly Challenge</h3>
+      <div class="muted">Goal: 50,000 steps this week</div>
+      <div class="progress" style="margin-top:.6rem"><span id="weekProgressBar" style="width:0%"></span></div>
+      <div style="display:flex;gap:.6rem;margin-top:.6rem;align-items:center">
+        <button class="action-btn" id="claimWeekBtn">Claim Weekly Bonus</button>
+        <div class="muted" id="weekStatus">Not reached</div>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <h3>Pedometer (Experimental)</h3>
+      <div class="muted">If your browser/device supports the Generic Sensor API, you may enable step counting. For demo we keep manual input as primary.</div>
+      <div style="display:flex;gap:.6rem;margin-top:.6rem">
+        <button class="action-btn" id="enablePedoBtn">Enable (experimental)</button>
+        <button class="action-btn secondary" id="stopPedoBtn">Stop</button>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<div class="footer">Walk tracker • 100 steps = 1 point (configurable)</div>
+
+<script src="js/app.js"></script>
+<script>
+/* walk.js inline */
+(function(){
+  const STEPS_PER_POINT = 100; // 100 steps = 1 point
+  const WEEK_GOAL = 50000; // weekly steps goal
+
+  const stepsInput = document.getElementById('stepsInput');
+  const addStepsBtn = document.getElementById('addStepsBtn');
+  const clearStepsBtn = document.getElementById('clearStepsBtn');
+  const totalStepsEl = document.getElementById('totalSteps');
+  const walkPointsEl = document.getElementById('walkPoints');
+  const weekProgressBar = document.getElementById('weekProgressBar');
+  const weekStatus = document.getElementById('weekStatus');
+  const claimWeekBtn = document.getElementById('claimWeekBtn');
+  const enablePedoBtn = document.getElementById('enablePedoBtn');
+  const stopPedoBtn = document.getElementById('stopPedoBtn');
+
+  function refreshUI(){
+    const total = ECO.getLocalSteps();
+    totalStepsEl.innerText = String(total);
+    const points = Math.floor(total / STEPS_PER_POINT);
+    walkPointsEl.innerText = `Points from steps: ${points}`;
+    const pct = Math.min(100, (total / WEEK_GOAL) * 100);
+    weekProgressBar.style.width = pct + '%';
+    weekStatus.innerText = total >= WEEK_GOAL ? 'Goal reached!' : `Keep going — ${WEEK_GOAL - total} steps left`;
+  }
+
+  addStepsBtn.addEventListener('click', ()=>{
+    const val = Number(stepsInput.value) || 0;
+    if(val <= 0){ alert('Enter positive steps'); return; }
+    let s = ECO.getLocalSteps();
+    s = Number(s) + Number(val);
+    ECO.setLocalSteps(s);
+    // award immediate points for the newly added steps
+    const pointsThisAdd = Math.floor(val / STEPS_PER_POINT);
+    const co2PerStep = 0.00025; // rough kg per step savings assumption if replacing short drive: illustrative only
+    const co2Award = Number(val) * co2PerStep;
+    if(pointsThisAdd > 0){
+      ECO.addPoints(pointsThisAdd, co2Award);
+      showTemp(`+${pointsThisAdd} pts from steps`);
+    }
+    refreshUI();
+    ECO.renderLeaderboardUI(document.getElementById('leaderboardList') || document.createElement('ol'));
+    stepsInput.value = '';
+  });
+
+  clearStepsBtn.addEventListener('click', ()=>{
+    if(!confirm('Clear saved step count?')) return;
+    ECO.setLocalSteps(0);
+    refreshUI();
+  });
+
+  claimWeekBtn.addEventListener('click', ()=>{
+    const total = ECO.getLocalSteps();
+    if(total >= WEEK_GOAL){
+      const bonusPts = 50; // weekly bonus
+      ECO.addPoints(bonusPts, 0);
+      showTemp(`Weekly goal achieved! +${bonusPts} bonus pts.`);
+    } else {
+      alert('You have not reached the weekly goal yet.');
+    }
+  });
+
+  function showTemp(text, ms=1800){
+    const el = document.createElement('div');
+    el.style.position='fixed'; el.style.left='50%'; el.style.transform='translateX(-50%)';
+    el.style.bottom='18px'; el.style.background='rgba(12,92,27,0.95)'; el.style.color='white';
+    el.style.padding='10px 14px'; el.style.borderRadius='999px'; el.style.zIndex=9999; el.innerText=text;
+    document.body.appendChild(el);
+    setTimeout(()=> el.remove(), ms);
+  }
+
+  // pedometer: experimental, many browsers won't support
+  let sensor = null;
+  enablePedoBtn.addEventListener('click', async ()=>{
+    if('Accelerometer' in window){
+      try{
+        // lightweight example (not a real step algorithm) — for demonstration only
+        const acc = new Accelerometer({frequency: 10});
+        let accHistory = [];
+        acc.addEventListener('reading', ()=> {
+          const mag = Math.sqrt(acc.x*acc.x + acc.y*acc.y + acc.z*acc.z);
+          accHistory.push(mag);
+          if(accHistory.length > 6) accHistory.shift();
+          // naive threshold detection
+          const avg = accHistory.reduce((a,b)=>a+b,0)/accHistory.length;
+          if(mag - avg > 1.1){
+            let s = ECO.getLocalSteps();
+            s += 1;
+            ECO.setLocalSteps(s);
+            // every N steps add points via batch (throttled)
+            if(s % STEPS_PER_POINT === 0){
+              ECO.addPoints(1, 0.00025 * STEPS_PER_POINT);
+              showTemp('Step -> +1 pt');
+            }
+            refreshUI();
+          }
+        });
+        acc.start();
+        sensor = acc;
+        showTemp('Pedometer enabled (experimental).');
+      } catch(e){
+        alert('Failed to start pedometer API: ' + e.message);
+      }
+    } else {
+      alert('Pedometer API not supported in this browser. Use manual step entry.');
+    }
+  });
+  stopPedoBtn.addEventListener('click', ()=>{
+    try{ if(sensor) sensor.stop(); sensor = null; showTemp('Pedometer stopped'); } catch(e){ }
+  });
+
+  // initialize
+  document.addEventListener('DOMContentLoaded', ()=>{
+    refreshUI();
+    ECO.renderLeaderboardUI(document.getElementById('leaderboardList') || document.createElement('ol'));
+    window.addEventListener('eco:stateChanged', ()=> { refreshUI(); ECO.renderLeaderboardUI(document.getElementById('leaderboardList') || document.createElement('ol')); });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Eco Gamify — CO₂ Impact</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header><h1>🔎 CO₂ Impact</h1></header>
+<main class="container" style="grid-template-columns:1fr;">
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="small muted">Your impact & relatable equivalents</div>
+      <a class="back-home" href="index.html">Back to Home</a>
+    </div>
+
+    <div style="margin-top:1rem">
+      <div class="small">Total CO₂ saved</div>
+      <div class="score-num" id="co2Total">0 kg</div>
+      <div class="muted" id="co2Equiv"></div>
+    </div>
+
+    <div style="margin-top:1rem">
+      <button class="action-btn" id="estimateBtn">Estimate Equivalent</button>
+    </div>
+  </section>
+</main>
+<script src="js/app.js"></script>
+<script src="js/co2.js"></script>
+</body>
+</html>

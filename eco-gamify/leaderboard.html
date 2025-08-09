@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Eco Gamify — Leaderboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header><h1>🏆 Leaderboard</h1></header>
+<main class="container" style="grid-template-columns:1fr;">
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="small muted">Global leaderboard (local demo)</div>
+      <a class="back-home" href="index.html">Back to Home</a>
+    </div>
+    <ol id="leaderboardList" class="leaderboard" style="margin-top:1rem"></ol>
+    <div style="margin-top:1rem">
+      <button class="action-btn" id="refreshBtn">Refresh</button>
+      <button class="action-btn secondary" id="clearBtn">Clear Leaderboard</button>
+    </div>
+  </section>
+</main>
+<script src="js/app.js"></script>
+<script src="js/leaderboard.js"></script>
+</body>
+</html>

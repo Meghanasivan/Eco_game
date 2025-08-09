@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Eco Gamify — Garden</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header><h1>🌳 My Virtual Garden</h1></header>
+<main class="container" style="grid-template-columns:1fr;">
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="small muted">Watch your garden grow as you act</div>
+      <a class="back-home" href="index.html">Back to Home</a>
+    </div>
+
+    <div class="garden" style="margin-top:1rem">
+      <div class="tree" id="virtualTree">
+        <div class="leaves stage-1" id="treeLeaves"></div>
+        <div class="trunk"></div>
+        <div class="grow-burst" id="growBurst"></div>
+      </div>
+    </div>
+    <div class="muted center">Level: <span id="treeLevel">Seedling</span></div>
+
+    <div style="margin-top:1rem">
+      <button class="action-btn" id="sproutBtn">Force Sprout (+50 pts)</button>
+    </div>
+  </section>
+</main>
+<script src="js/app.js"></script>
+<script src="js/garden.js"></script>
+</body>
+</html>
